@@ -32,12 +32,13 @@ class Auth():
     def verify_password(self, plain_password: str, hashed_password: str):
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def encode_token(self, username: str):
+    def encode_token(self, username: str, user_id: int):
         payload = {
             'exp' : datetime.utcnow() + timedelta(minutes=self.access_token_expires_minutes),
             'iat' : datetime.utcnow(),
             'scope': 'access_token',
-            'sub' : username
+            'sub' : username,
+            'user_id' : user_id
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
@@ -45,7 +46,7 @@ class Auth():
         try:
             payload = jwt.decode(token, self.secret_key, self.algorithm)
             if (payload['scope'] == 'access_token'):
-                return payload['sub']   
+                return {'username' : payload['sub'], 'user_id': payload['user_id']}
             raise HTTPException(status_code=401, detail='Scope for the token is invalid')
         except jwt.ExpiredSignatureError:
             #여기서 새토큰 생ㅅ어?
@@ -53,12 +54,13 @@ class Auth():
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail='Invalid token')
         
-    def encode_refresh_token(self, username: str):
+    def encode_refresh_token(self, username: str, user_id: int):
         payload = {
             'exp' : datetime.utcnow() + timedelta(hours=self.refresh_token_expires_hours),
             'iat' : datetime.utcnow(),
             'scope': 'refresh_token',
-            'sub' : username
+            'sub' : username,
+            'user_id' : user_id
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
@@ -67,7 +69,8 @@ class Auth():
             payload = jwt.decode(refresh_token, self.secret_key, self.algorithm)
             if (payload['scope'] == 'refresh_token'):
                 username = payload['sub']
-                new_token = self.encode_token(username)
+                user_id = payload['user_id']
+                new_token = self.encode_token(username=username, user_id=user_id)
                 return new_token
             raise HTTPException(status_code=401, detail='Invalid scope for token')
         except jwt.ExpiredSignatureError:
@@ -119,7 +122,7 @@ async def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     try:
         # password暗号化して登録
-        hashed_password = auth_handler.encode_password(user.password)
+        hashed_password = auth_handler.get_password_hash(user.password)
         return auth_crud.create_user(db=db, user=user)
     except:
         raise HTTPException(status_code=409, detail="username already exists")
@@ -133,14 +136,14 @@ async def login_for_access_token(login: schemas.Login, db: Session = Depends(get
     """
     user = authenticate_user(db=db, username=login.username, password=login.password)
     
-    access_token = auth_handler.encode_token(user.username)
-    refresh_token = auth_handler.encode_refresh_token(user.username)
+    access_token = auth_handler.encode_token(username=user.username, user_id=user.id)
+    refresh_token = auth_handler.encode_refresh_token(username=user.username, user_id=user.id)
     auth_crud.update_refresh_token(db=db, username=user.username, refresh_token=refresh_token)
 
     return {'access_token': access_token, 'refresh_token': refresh_token}
 
 
-@router.get('/refresh_token')
+@router.post('/refresh_token')
 def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security)):
     refresh_token = credentials.credentials
     new_token = auth_handler.refresh_token(refresh_token)
@@ -150,4 +153,4 @@ def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security)
 def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)):
     token = credentials.credentials
     if(auth_handler.decode_token(token)):
-        return 'Top Secret data only authorized useddrs can access this info'
+        return auth_handler.decode_token(token)
