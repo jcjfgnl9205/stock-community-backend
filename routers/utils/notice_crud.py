@@ -21,7 +21,7 @@ def get_notices(db: Session):
                     , models.Notice.title
                     , models.Notice.views
                     , models.Notice.created_at
-                    , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("user_name")
+                    , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("writer")
                     , func.count(models.NoticeComment.notice_id).label("notice_comment_cnt"))\
             .join(models.User, models.Notice.user_id == models.User.id)\
             .join(models.NoticeComment, models.Notice.id == models.NoticeComment.notice_id, isouter=True)\
@@ -43,7 +43,7 @@ def get_notice(db: Session, notice_id: int):
                 , models.Notice.created_at
                 , models.Notice.updated_at
                 , models.User.id.label("writer_id")
-                , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("user_name"))\
+                , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("writer"))\
             .join(models.User, models.Notice.user_id == models.User.id)\
             .join(models.NoticeVote, models.Notice.id == models.NoticeVote.notice_id, isouter=True)\
         .filter(models.Notice.id == notice_id)\
@@ -88,8 +88,8 @@ def get_notice_comments(db: Session, notice_id: int):
                 , models.NoticeComment.comment
                 , models.NoticeComment.created_at
                 , models.NoticeComment.updated_at
-                , models.User.id.label("user_id")
-                , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("user_name"))\
+                , models.User.id.label("writer_id")
+                , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("writer"))\
             .join(models.NoticeComment, models.Notice.id == models.NoticeComment.notice_id)\
             .join(models.User, models.NoticeComment.user_id == models.User.id)\
             .filter(models.Notice.id == notice_id)\

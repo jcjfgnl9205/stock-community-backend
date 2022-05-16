@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 
-@router.post("/create", response_model=schemas.Notice)
+@router.post("", response_model=schemas.Notice)
 async def create_notice(notice: schemas.NoticeCreate
                         , current_user: str = Depends(get_current_user)
                         , db: Session = Depends(get_db)):
@@ -32,7 +32,7 @@ async def create_notice(notice: schemas.NoticeCreate
     return notice_crud.create_notice(db=db, notice=notice, user_id=current_user['user_id'])
 
 
-@router.get("/", response_model=Page[schemas.Notices])
+@router.get("", response_model=Page[schemas.Notices])
 async def get_notices(paginationPage: Optional[int] = 0, db: Session = Depends(get_db)):
     """
     <h2>掲示板リスト</h2>

@@ -31,7 +31,7 @@ class Notices(BaseModel):
     views: int
     created_at: datetime
     notice_comment_cnt: Optional[int] = 0
-    user_name: str
+    writer: str
 
 class Notice(NoticeBase):
     id: int 
@@ -41,7 +41,7 @@ class Notice(NoticeBase):
     created_at: datetime
     updated_at: datetime
     writer_id: int
-    user_name: str
+    writer: str
 
     class Config:
         orm_mode = True
@@ -52,8 +52,8 @@ class CommentBase(BaseModel):
 
 class Comment(CommentBase):
     id: int
-    user_id: int
-    user_name: str
+    writer_id: int
+    writer: str
     created_at: datetime
     updated_at: datetime
 
