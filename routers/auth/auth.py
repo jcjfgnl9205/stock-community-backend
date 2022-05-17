@@ -122,7 +122,7 @@ async def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     try:
         # password暗号化して登録
-        hashed_password = auth_handler.get_password_hash(user.password)
+        user.password = auth_handler.get_password_hash(user.password)
         return auth_crud.create_user(db=db, user=user)
     except:
         raise HTTPException(status_code=409, detail="username already exists")
