@@ -26,6 +26,8 @@ class User(Base):
     user_refresh = relationship("UserRefresh", back_populates="user")
     notice = relationship("Notice", back_populates="user")
     notice_comment = relationship("NoticeComment", back_populates="user")
+    notice_vote = relationship("NoticeVote", back_populates="user")
+
 
 # USER REFRESH TOKEN INFO TABLE
 class UserRefresh(Base):
@@ -55,6 +57,7 @@ class Notice(Base):
 
     user = relationship("User", back_populates="notice")
     notice_comment = relationship("NoticeComment", back_populates="notice")
+    notice_vote = relationship("NoticeVote", back_populates="notice")
 
 # NOTICE COMMENT TABLE
 class NoticeComment(Base):
@@ -70,5 +73,21 @@ class NoticeComment(Base):
 
     user = relationship("User", back_populates="notice_comment")
     notice = relationship("Notice", back_populates="notice_comment")
+
+# NOTICE VOTE TABLE
+class NoticeVote(Base):
+    __tablename__ = "notice_vote"
+
+    id = Column(Integer, primary_key=True, index=True)
+    like = Column(Integer, default=False, nullable=False)
+    hate = Column(Integer, default=False, nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    notice_id = Column(Integer, ForeignKey("notice.id"))
+
+    user = relationship("User", back_populates="notice_vote")
+    notice = relationship("Notice", back_populates="notice_vote")
+
 
 metadata.create_all(bind=engine)

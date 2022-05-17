@@ -3,7 +3,8 @@ from sqlalchemy import func, case
 from .. import models
 from ..notice import schemas
 from datetime import datetime
-from fastapi import HTTPException
+from fastapi import status
+from fastapi.responses import JSONResponse
 
 
 # Notice Create
@@ -69,7 +70,7 @@ def delete_notice(db: Session, notice_id: int):
     db.add(db_notice)
     db.commit()
     db.refresh(db_notice)
-    return HTTPException(status_code=200, detail="Success")
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"detail": "Success"})
 
 
 # Notice Comment Create
@@ -124,6 +125,35 @@ def delete_notice_comment(db: Session, comment_id: int):
     db.commit()
     db.refresh(db_comment)
     return get_notice_comments(db=db, notice_id=db_comment.notice_id)
+
+
+# Notice Get Like, Hate
+def get_votes(db: Session, notice_id: int):
+    return db.query(models.NoticeVote)\
+            .filter(models.NoticeVote.notice_id == notice_id)\
+            .all()
+
+
+# Notice Set Like, Hate Update
+def update_vote(db: Session, vote: schemas.VoteUpdate, notice_id: int, user_id: int):
+    db_like = db.query(models.NoticeVote)\
+                .filter(models.NoticeVote.notice_id == notice_id)\
+                .filter(models.NoticeVote.user_id == user_id)\
+                .first()
+
+    if db_like:
+        db_like.like = vote.like
+        db_like.hate = vote.hate
+        db.add(db_like)
+        db.commit()
+        db.refresh(db_like)
+        return get_votes(db=db, notice_id=notice_id)
+
+    db_like = models.NoticeVote(**vote.dict(), notice_id=notice_id, user_id=user_id)
+    db.add(db_like)
+    db.commit()
+    db.refresh(db_like)
+    return get_votes(db=db, notice_id=notice_id)
 
 
 def get_datetime():

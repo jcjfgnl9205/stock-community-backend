@@ -4,14 +4,17 @@ from pydantic import BaseModel, validator
 from fastapi import File, UploadFile, Form
 
 
-class Vote(BaseModel):
+class VoteBase(BaseModel):
     like: Optional[bool] = False
     hate: Optional[bool] = False
+
+class Vote(VoteBase):
+    user_id: int
 
     class Config:
         orm_mode = True
 
-class VoteUpdate(Vote):
+class VoteUpdate(VoteBase):
     pass
 
 
@@ -23,6 +26,9 @@ class NoticeCreate(NoticeBase):
     pass
 
 class NoticeUpdate(NoticeBase):
+    writer_id: int
+
+class NoticeDelete(BaseModel):
     writer_id: int
 
 class Notices(BaseModel):
