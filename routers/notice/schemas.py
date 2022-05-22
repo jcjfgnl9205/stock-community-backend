@@ -28,6 +28,7 @@ class Notices(BaseModel):
     views: int
     created_at: datetime
     notice_comment_cnt: Optional[int] = 0
+    like_cnt: Optional[int] = 0
     writer: str
 
 class Notice(NoticeBase):
@@ -37,6 +38,7 @@ class Notice(NoticeBase):
     hate_cnt: int = 0
     created_at: datetime
     updated_at: datetime
+    notice_comment_cnt: int
     writer_id: int
     writer: str
 
