@@ -23,7 +23,7 @@ router = APIRouter(
 
 
 @router.post("", response_model=schemas.Notice)
-async def create_notice(notice: schemas.NoticeCreate
+async def create_notice(notice: schemas.NoticeBase
                         , current_user: str = Depends(get_current_user)
                         , db: Session = Depends(get_db)):
     """
@@ -58,10 +58,30 @@ async def get_notice(notice_id: int, db: Session = Depends(get_db)):
     return notice
 
 
+def get_notice_me(notice_id: int
+                , notice: schemas.Notice = Depends(get_notice)
+                , current_user: str = Depends(get_current_user)
+                , db: Session = Depends(get_db)):
+    """
+    <h2>掲示板詳細</h2>
+    Loginしたユーザーと掲示板投稿したユーザーと一致するか確認
+    
+    ※ Raises
+        HTTPException<br/>
+        　　404: 掲示板番号が存在しない場合
+        　　401: Loginしていない場合<br/>
+        　　401: Loginしているユーザーと掲示板投稿者と異なっている場合<br/>
+    """
+    if notice.writer_id != current_user['user_id']:
+        raise HTTPException(status_code=401, detail="The writer and the login user are different")
+    return notice
+
+
 @router.put("/{notice_id}", response_model=schemas.Notice)
 async def update_notice(notice_id: int
-                        , notice: schemas.NoticeUpdate
+                        , notice: schemas.NoticeBase
                         , current_user: str = Depends(get_current_user)
+                        , get_notice: schemas.Notice = Depends(get_notice_me)
                         , db: Session = Depends(get_db)):
     """
     <h2>掲示板更新</h2>
@@ -73,15 +93,13 @@ async def update_notice(notice_id: int
         　　401: Loginしていない場合<br/>
         　　401: Loginしているユーザーと掲示板投稿者と異なっている場合<br/>
     """
-    if notice.writer_id != current_user['user_id']:
-        raise HTTPException(status_code=401, detail="The writer and the login user are different")
     return notice_crud.update_notice(db=db, notice_id=notice_id, notice=notice)
 
 
 @router.delete("/{notice_id}")
 async def delete_notice(notice_id: int
-                        , notice: schemas.NoticeDelete
                         , current_user: str = Depends(get_current_user)
+                        , notice: schemas.Notice = Depends(get_notice_me)
                         , db: Session = Depends(get_db)):
     """
     <h2>掲示板削除</h2>
@@ -93,15 +111,13 @@ async def delete_notice(notice_id: int
         　　401: Loginしていない場合<br/>
         　　401: Loginしているユーザーと掲示板投稿者と異なっている場合<br/>
     """
-    if notice.writer_id != current_user['user_id']:
-        raise HTTPException(status_code=401, detail="The writer and the login user are different")
     return notice_crud.delete_notice(db=db, notice_id=notice_id)
 
 
 @router.post("/{notice_id}/comment", response_model=Page[schemas.Comment])
 async def create_notice_comment(notice_id: int
-                                , comment: schemas.CommentCreate
-                                , get_notice: schemas.Notice = Depends(get_notice)
+                                , comment: schemas.CommentBase
+                                , notice: schemas.Notice = Depends(get_notice)
                                 , current_user: str = Depends(get_current_user)
                                 , db: Session = Depends(get_db)):
     """
@@ -118,7 +134,7 @@ async def create_notice_comment(notice_id: int
 
 @router.get("/{notice_id}/comments", response_model=Page[schemas.Comment])
 async def get_notice_comments(notice_id: int
-                            , get_notice: schemas.Notice = Depends(get_notice)
+                            , notice: schemas.Notice = Depends(get_notice)
                             , db: Session = Depends(get_db)):
     """
     <h2>掲示板のコメントリスト</h2>
@@ -131,10 +147,10 @@ async def get_notice_comments(notice_id: int
     return paginate(notice_crud.get_notice_comments(db=db, notice_id=notice_id))
 
 
-@router.get("/{notice_id}/comment/{comment_id}", response_model=schemas.Comment)
-async def get_notice_comment(notice_id: int
+async def get_notice_comment_me(notice_id: int
                             , comment_id: int
-                            , get_notice: schemas.Notice = Depends(get_notice)
+                            , notice: schemas.Notice = Depends(get_notice)
+                            , current_user: str = Depends(get_current_user)
                             , db: Session = Depends(get_db)):
     """
     <h2>掲示板のコメント詳細</h2>
@@ -147,15 +163,16 @@ async def get_notice_comment(notice_id: int
     comment = notice_crud.get_notice_comment(db=db, comment_id=comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Notice comment not found")
+    if comment.user_id != current_user['user_id']:
+        raise HTTPException(status_code=401, detail="The writer and the login user are different")
     return comment
 
 
 @router.put("/{notice_id}/comment/{comment_id}", response_model=Page[schemas.Comment])
 async def update_notice_comment(notice_id: int
                                 , comment_id: int
-                                , comment: schemas.CommentUpdate
-                                , get_notice: schemas.Notice = Depends(get_notice)
-                                , get_notice_comment: schemas.Comment = Depends(get_notice_comment)
+                                , comment: schemas.CommentBase
+                                , notice_comment: schemas.Comment = Depends(get_notice_comment_me)
                                 , current_user: str = Depends(get_current_user)
                                 , db: Session = Depends(get_db)):
     """
@@ -168,17 +185,13 @@ async def update_notice_comment(notice_id: int
         　　401: Loginしていない場合<br/>
         　　401: Loginしているユーザーとコメント投稿者と異なっている場合<br/>
     """
-    if comment.writer_id != current_user['user_id']:
-        raise HTTPException(status_code=401, detail="The writer and the login user are different")
     return paginate(notice_crud.update_notice_comment(db=db, comment_id=comment_id, comment=comment))
 
 
 @router.delete("/{notice_id}/comment/{comment_id}", response_model=Page[schemas.Comment])
 async def delete_notice_comment(notice_id: int
                                 , comment_id: int
-                                , writer_id: int
-                                , get_notice: schemas.Notice = Depends(get_notice)
-                                , get_notice_comment: schemas.Comment = Depends(get_notice_comment)
+                                , notice_comment: schemas.Comment = Depends(get_notice_comment_me)
                                 , current_user: str = Depends(get_current_user)
                                 , db: Session = Depends(get_db)):
     """
@@ -191,14 +204,12 @@ async def delete_notice_comment(notice_id: int
         　　401: Loginしていない場合<br/>
         　　401: Loginしているユーザーとコメント投稿者と異なっている場合<br/>
     """
-    if writer_id != current_user['user_id']:
-        raise HTTPException(status_code=401, detail="The writer and the login user are different")
     return paginate(notice_crud.delete_notice_comment(db=db, comment_id=comment_id))
 
 
 @router.get("/{notice_id}/vote", response_model=List[schemas.Vote])
 async def get_votes(notice_id: int
-                    , get_notice: schemas.Notice = Depends(get_notice)
+                    , notice: schemas.Notice = Depends(get_notice)
                     , db: Session = Depends(get_db)):
     """
     <h2>掲示板のLike, Hate count</h2>
@@ -214,7 +225,7 @@ async def get_votes(notice_id: int
 @router.post("/{notice_id}/vote", response_model=List[schemas.Vote])
 async def update_vote(notice_id: int
                         , vote: schemas.VoteUpdate
-                        , get_notice: schemas.Notice = Depends(get_notice)
+                        , notice: schemas.Notice = Depends(get_notice)
                         , current_user: str = Depends(get_current_user)
                         , db: Session = Depends(get_db)):
     """

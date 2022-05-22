@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 
 # Notice Create
-def create_notice(db: Session, notice: schemas.NoticeCreate, user_id: int):
+def create_notice(db: Session, notice: schemas.NoticeBase, user_id: int):
     db_notice = models.Notice(**notice.dict(), user_id=user_id)
     db.add(db_notice)
     db.commit()
@@ -53,7 +53,7 @@ def get_notice(db: Session, notice_id: int):
 
 
 # Notice Update
-def update_notice(db: Session, notice_id: int, notice: schemas.NoticeUpdate):
+def update_notice(db: Session, notice_id: int, notice: schemas.NoticeBase):
     db_notice = db.query(models.Notice).filter(models.Notice.id == notice_id).first()
     db_notice.title = notice.title
     db_notice.content = notice.content
@@ -74,7 +74,7 @@ def delete_notice(db: Session, notice_id: int):
 
 
 # Notice Comment Create
-def create_notice_comment(db: Session, comment: schemas.CommentCreate, notice_id: int, user_id: int):
+def create_notice_comment(db: Session, comment: schemas.CommentBase, notice_id: int, user_id: int):
     db_comment = models.NoticeComment(**comment.dict(), notice_id=notice_id, user_id=user_id)
     db.add(db_comment)
     db.commit()
@@ -108,7 +108,7 @@ def get_notice_comment(db: Session, comment_id: int):
 
 
 # Notice Comment Update
-def update_notice_comment(db: Session, comment_id: int, comment: schemas.CommentUpdate):
+def update_notice_comment(db: Session, comment_id: int, comment: schemas.CommentBase):
     db_comment = db.query(models.NoticeComment).filter(models.NoticeComment.id == comment_id).first()
     db_comment.comment = comment.comment
     db.add(db_comment)

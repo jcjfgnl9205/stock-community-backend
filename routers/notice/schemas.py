@@ -22,15 +22,6 @@ class NoticeBase(BaseModel):
     title: str
     content: str
 
-class NoticeCreate(NoticeBase):
-    pass
-
-class NoticeUpdate(NoticeBase):
-    writer_id: int
-
-class NoticeDelete(BaseModel):
-    writer_id: int
-
 class Notices(BaseModel):
     id: int
     title: str
@@ -65,9 +56,3 @@ class Comment(CommentBase):
 
     class Config:
         orm_mode = True
-
-class CommentCreate(CommentBase):
-    pass
-
-class CommentUpdate(CommentBase):
-    writer_id: int
