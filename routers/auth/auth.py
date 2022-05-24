@@ -111,6 +111,32 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 
+@router.post("/signup/duplicate_id_check")
+async def duplicate_id_check(user: schemas.UserInfoCheck, db: Session = Depends(get_db)):
+    """
+    <h2>会員登録</h2>
+    会員登録する時、usernameを重複チェックする
+    """
+    
+    _user = get_user(db=db, username=user.username)
+    if _user:
+        raise HTTPException(status_code=409, detail="username already exists")
+    return {"username": user.username, "result": True}
+
+
+@router.post("/signup/duplicate_email_check")
+async def duplicate_id_check(user: schemas.UserInfoCheck, db: Session = Depends(get_db)):
+    """
+    <h2>会員登録</h2>
+    会員登録する時、emailを重複チェックする
+    """
+    
+    _user = auth_crud.get_user_for_email(db=db, email=user.email)
+    if _user:
+        raise HTTPException(status_code=409, detail="email already exists")
+    return {"email": user.email, "result": True}
+
+
 @router.post("/signup", response_model=schemas.User)
 async def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """

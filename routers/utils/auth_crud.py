@@ -9,6 +9,11 @@ def get_user(db: Session, username: str):
             .filter(models.User.username == username)\
             .first()
 
+def get_user_for_email(db: Session, email: str):
+    return db.query(models.User)\
+            .filter(models.User.email == email)\
+            .first()
+
 # User Insert
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(**user.dict())

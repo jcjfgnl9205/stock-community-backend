@@ -7,6 +7,10 @@ class Token(BaseModel):
     access_token: str
     refresh_token: str
 
+class UserInfoCheck(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+
 class User(BaseModel):
     username: str
     email: str
