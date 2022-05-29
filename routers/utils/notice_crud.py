@@ -86,6 +86,16 @@ def get_notice(db: Session, notice_id: int):
             .first()
 
 
+# Notice View Count Update
+def update_notice_view_count(db: Session, notice_id: int):
+    db_notice = db.query(models.Notice).filter(models.Notice.id == notice_id).first()
+    db_notice.views = db_notice.views + 1
+    db.add(db_notice)
+    db.commit()
+    db.refresh(db_notice)
+    return get_notice(db=db, notice_id=db_notice.id)
+
+
 # Notice Update
 def update_notice(db: Session, notice_id: int, notice: schemas.NoticeBase):
     db_notice = db.query(models.Notice).filter(models.Notice.id == notice_id).first()

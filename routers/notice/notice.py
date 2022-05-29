@@ -58,6 +58,21 @@ async def get_notice(notice_id: int, db: Session = Depends(get_db)):
     return notice
 
 
+@router.put("/{notice_id}/view-count")
+def update_notice_view_count(notice_id: int
+                            , notice: schemas.Notice = Depends(get_notice)
+                            , db: Session = Depends(get_db)):
+    """
+    <h2>掲示板Viewを増加する</h2>
+    掲示板にアクセスするとviewcountを１足す
+    
+    ※ Raises
+        HTTPException<br/>
+        　　404: 掲示板番号が存在しない場合
+    """
+    return notice_crud.update_notice_view_count(db=db, notice_id=notice_id)
+
+
 def get_notice_me(notice_id: int
                 , notice: schemas.Notice = Depends(get_notice)
                 , current_user: str = Depends(get_current_user)
