@@ -22,6 +22,26 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return get_user(db=db, username=db_user.username)
 
+# User Update
+def update_user(db: Session, username: str, user: schemas.UserUpdate):
+    db_user = db.query(models.User).filter(models.User.username == username).first()
+    db_user.first_name = user.first_name
+    db_user.last_name = user.last_name
+    db_user.zipcode = user.zipcode
+    db_user.address1 = user.address1
+    db_user.address2 = user.address2
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return get_user(db=db, username=db_user.username)
+
+# User password update
+def update_password(db: Session, user: models.User):
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return get_user(db=db, username=user.username)
+
 # RefreshToekn Info取得
 def get_refresh_token(db: Session, username: str):
     return db.query(models.UserRefresh)\

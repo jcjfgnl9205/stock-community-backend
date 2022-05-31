@@ -180,3 +180,37 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
     token = credentials.credentials
     if(auth_handler.decode_token(token)):
         return auth_handler.decode_token(token)
+
+
+@router.get('/{username}', response_model=schemas.User)
+def get_user_api(username: str
+            , current_user: str = Depends(get_current_user)
+            , db: Session = Depends(get_db)):
+    """
+    <h2>loginしているユーザー情報</h2>
+    """
+    return get_user(db=db, username=username)
+
+
+@router.put('/{username}', response_model=schemas.User)
+def get_user_api(username: str
+            , user: schemas.UserUpdate
+            , current_user: str = Depends(get_current_user)
+            , db: Session = Depends(get_db)):
+    """
+    <h2>loginしているユーザー情報更新</h2>
+    """
+    return auth_crud.update_user(db=db, username=username, user=user)
+
+
+@router.put('/{username}/pw')
+def update_password_api(username: str
+            , password: schemas.UserPassword
+            , current_user: str = Depends(get_current_user)
+            , db: Session = Depends(get_db)):
+    """
+    <h2>loginしているユーザーPASSWORD変更</h2>
+    """
+    user = authenticate_user(db=db, username=username, password=password.oldPassword)
+    user.password = auth_handler.get_password_hash(password.password)
+    return auth_crud.update_password(db=db, user=user)

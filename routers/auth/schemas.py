@@ -30,6 +30,14 @@ class UserCreate(User):
     is_active: bool = False
     is_staff: bool = False
 
+
+class UserUpdate(User):
+    pass
+
 class Login(BaseModel):
     username: str
+    password: str
+
+class UserPassword(BaseModel):
+    oldPassword: str
     password: str
