@@ -90,4 +90,18 @@ class NoticeVote(Base):
     notice = relationship("Notice", back_populates="notice_vote")
 
 
+
+# FAQ TABLE
+class Faq(Base):
+    __tablename__ = "FAQ"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    flg = Column(Boolean, default=True, nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+
 metadata.create_all(bind=engine)
