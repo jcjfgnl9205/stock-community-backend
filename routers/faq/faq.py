@@ -40,14 +40,7 @@ async def update_faq(faq_id: int, faq: schemas.Faq, db: Session = Depends(get_db
     """
     return faq_crud.update_faq(db=db, faq=faq, faq_id=faq_id)
 
-@router.put("/{faq_id}", response_model=schemas.Faq)
-async def update_faq_flg(faq_id: int, faq: schemas.Faq, db: Session = Depends(get_db)):
-    """
-    <h2>QnAのFlgを更新する</h2>
-    """
-    return faq_crud.update_faq_flg(db=db, faq=faq, faq_id=faq_id)
-
-@router.delete("/{faq_id}")
+@router.delete("/{faq_id}", response_model=List[schemas.Faq])
 async def delete_faq(faq_id: int, db: Session = Depends(get_db)):
     """
     <h2>QnAを削除する</h2>

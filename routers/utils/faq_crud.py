@@ -17,8 +17,8 @@ def create_faq(db: Session, faq: schemas.FaqBase):
 # Faq List
 def get_faqs(db: Session):
     return db.query(models.Faq)\
-                .filter(models.Faq.flg == True)\
                 .filter(models.Faq.deleted_at == None)\
+                .order_by(models.Faq.id.desc())\
                 .all()
 
 
@@ -26,7 +26,6 @@ def get_faqs(db: Session):
 def get_faq(db: Session, faq_id: int):
     return db.query(models.Faq)\
                 .filter(models.Faq.id == faq_id)\
-                .filter(models.Faq.flg == True)\
                 .filter(models.Faq.deleted_at == None)\
                 .first()
 
@@ -36,14 +35,6 @@ def update_faq(db:Session, faq: schemas.FaqBase, faq_id: int):
     db_faq = db.query(models.Faq).filter(models.Faq.id == faq_id).first()
     db_faq.title = faq.title
     db_faq.content = faq.content
-    db.commit()
-    db.refresh(db_faq)
-    return get_faq(db=db, faq_id=faq_id)
-
-
-# Faq Flg Update
-def update_faq_flg(db: Session, faq: schemas.Faq, faq_id: int):
-    db_faq = db.query(models.Faq).filter(models.Faq.id == faq_id).first()
     db_faq.flg = faq.flg
     db.commit()
     db.refresh(db_faq)

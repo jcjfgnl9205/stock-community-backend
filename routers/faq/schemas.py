@@ -6,10 +6,10 @@ from pydantic import BaseModel
 class FaqBase(BaseModel):
     title: str
     content: str
+    flg: Optional[bool] = True
 
 class Faq(FaqBase):
     id: int
-    flg: bool
 
     class Config:
         orm_mode = True
