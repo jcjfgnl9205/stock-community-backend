@@ -32,13 +32,15 @@ class Auth():
     def verify_password(self, plain_password: str, hashed_password: str):
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def encode_token(self, username: str, user_id: int):
+    def encode_token(self, user: schemas.User):
         payload = {
             'exp' : datetime.utcnow() + timedelta(minutes=self.access_token_expires_minutes),
             'iat' : datetime.utcnow(),
             'scope': 'access_token',
-            'sub' : username,
-            'user_id' : user_id
+            'sub' : user.username,
+            'user_id' : user.id,
+            'is_active': user.is_active,
+            'is_staff': user.is_staff
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
@@ -54,13 +56,15 @@ class Auth():
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail='Invalid token')
         
-    def encode_refresh_token(self, username: str, user_id: int):
+    def encode_refresh_token(self, user: schemas.User):
         payload = {
             'exp' : datetime.utcnow() + timedelta(hours=self.refresh_token_expires_hours),
             'iat' : datetime.utcnow(),
             'scope': 'refresh_token',
-            'sub' : username,
-            'user_id' : user_id
+            'sub' : user.username,
+            'user_id' : user.id,
+            'is_active': user.is_active,
+            'is_staff': user.is_staff
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
@@ -68,10 +72,11 @@ class Auth():
         try:
             payload = jwt.decode(refresh_token, self.secret_key, self.algorithm)
             if (payload['scope'] == 'refresh_token'):
-                username = payload['sub']
-                user_id = payload['user_id']
-                new_token = self.encode_token(username=username, user_id=user_id)
-                return new_token
+                payload['exp'] = datetime.utcnow() + timedelta(minutes=self.access_token_expires_minutes)
+                payload['iat'] = datetime.utcnow()
+                payload['scope'] = 'access_token'
+                return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
+                
             raise HTTPException(status_code=401, detail='Invalid scope for token')
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail='Refresh token expired')
@@ -161,9 +166,9 @@ async def login_for_access_token(login: schemas.Login, db: Session = Depends(get
     ユーザーがログインに成功した場合、<b>access token, refresh token</b>を返します。
     """
     user = authenticate_user(db=db, username=login.username, password=login.password)
-    
-    access_token = auth_handler.encode_token(username=user.username, user_id=user.id)
-    refresh_token = auth_handler.encode_refresh_token(username=user.username, user_id=user.id)
+
+    access_token = auth_handler.encode_token(user=user)
+    refresh_token = auth_handler.encode_refresh_token(user=user)
     auth_crud.update_refresh_token(db=db, username=user.username, refresh_token=refresh_token)
 
     return {'access_token': access_token, 'refresh_token': refresh_token}
