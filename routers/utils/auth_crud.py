@@ -63,3 +63,10 @@ def update_refresh_token(db: Session, username: str, refresh_token: str):
     db.commit()
     db.refresh(db_user)
     return get_user(db=db, username=db_user.username)
+
+
+def auth_num_check(db: Session, user: schemas.PasswordFind):
+    return db.query(models.User)\
+            .filter(models.User.email == user.email)\
+            .filter(models.User.auth_number == user.authNum)\
+            .first()

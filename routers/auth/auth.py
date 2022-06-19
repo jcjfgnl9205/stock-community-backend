@@ -219,3 +219,23 @@ def update_password_api(username: str
     user = authenticate_user(db=db, username=username, password=password.oldPassword)
     user.password = auth_handler.get_password_hash(password.password)
     return auth_crud.update_password(db=db, user=user)
+
+
+@router.post("/forgot-password", response_model=schemas.User)
+async def forgot_password(user: schemas.PasswordFind
+                    , db: Session = Depends(get_db)):
+    _user = auth_crud.get_user_for_email(db=db, email=user.email)
+    if not _user:
+        raise HTTPException(status_code=401, detail="登録されているEmailが存在しません。")
+    # 認証メール送信
+    
+    return _user
+
+
+@router.post("/forgot-password/auth-number", response_model=schemas.User)
+async def forgot_password_authnum(user: schemas.PasswordFind
+                    , db: Session = Depends(get_db)):
+    _user = auth_crud.auth_num_check(db=db, user=user)
+    if not _user:
+        raise HTTPException(status_code=401, detail="認証番号が間違っています。")
+    return _user

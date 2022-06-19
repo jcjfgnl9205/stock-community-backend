@@ -41,3 +41,8 @@ class Login(BaseModel):
 class UserPassword(BaseModel):
     oldPassword: str
     password: str
+
+
+class PasswordFind(BaseModel):
+    email: str
+    authNum: Optional[str] = 0
