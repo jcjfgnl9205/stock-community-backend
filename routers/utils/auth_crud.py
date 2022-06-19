@@ -44,21 +44,21 @@ def update_password(db: Session, user: models.USER):
 
 # RefreshToekn Info取得
 def get_refresh_token(db: Session, username: str):
-    return db.query(models.USERRefresh)\
-            .filter(models.USERRefresh.username == username)\
+    return db.query(models.USER_REFRESH_TOKEN)\
+            .filter(models.USER_REFRESH_TOKEN.username == username)\
             .first()
 
 # RefreshToekn Update or Insert
 def update_refresh_token(db: Session, username: str, refresh_token: str):
     if get_refresh_token(db=db, username=username):
-        db_user = db.query(models.USERRefresh).filter(models.USERRefresh.username == username).first()
+        db_user = db.query(models.USER_REFRESH_TOKEN).filter(models.USER_REFRESH_TOKEN.username == username).first()
         db_user.refresh_token = refresh_token
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
         return get_user(db=db, username=db_user.username)
 
-    db_user = models.USERRefresh(username=username, refresh_token=refresh_token)
+    db_user = models.USER_REFRESH_TOKEN(username=username, refresh_token=refresh_token)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
