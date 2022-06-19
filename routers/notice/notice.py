@@ -53,7 +53,7 @@ async def get_notice(notice_id: int, db: Session = Depends(get_db)):
         　　404: 掲示板番号が存在しない場合
     """
     notice = notice_crud.get_notice(db=db, notice_id=notice_id)
-    if notice.id is None:
+    if notice is None:
         raise HTTPException(status_code=404, detail="Notice not found")
     return notice
 
