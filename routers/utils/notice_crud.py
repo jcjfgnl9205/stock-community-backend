@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 # Notice Create
 def create_notice(db: Session, notice: schemas.NoticeBase, user_id: int):
-    db_notice = models.Notice(**notice.dict(), user_id=user_id)
+    db_notice = models.NOTICE_DETAIL_DAT(**notice.dict(), user_id=user_id)
     db.add(db_notice)
     db.commit()
     db.refresh(db_notice)
@@ -18,77 +18,77 @@ def create_notice(db: Session, notice: schemas.NoticeBase, user_id: int):
 
 # Notice List
 def get_notices(db: Session):
-    vote_sub_query = db.query(models.Notice.id
-                            , func.sum(case([(models.NoticeVote.like == True, 1)], else_=0)).label("like_cnt")
-                            , func.sum(case([(models.NoticeVote.hate == True, 1)], else_=0)).label("hate_cnt"))\
-            .join(models.NoticeVote, models.Notice.id == models.NoticeVote.notice_id, isouter=True)\
-            .group_by(models.Notice.id)\
-            .filter(models.Notice.deleted_at == None)\
+    vote_sub_query = db.query(models.NOTICE_DETAIL_DAT.id
+                            , func.sum(case([(models.NOTICE_DETAIL_VOTE_DAT.like == True, 1)], else_=0)).label("like_cnt")
+                            , func.sum(case([(models.NOTICE_DETAIL_VOTE_DAT.hate == True, 1)], else_=0)).label("hate_cnt"))\
+            .join(models.NOTICE_DETAIL_VOTE_DAT, models.NOTICE_DETAIL_DAT.id == models.NOTICE_DETAIL_VOTE_DAT.notice_id, isouter=True)\
+            .group_by(models.NOTICE_DETAIL_DAT.id)\
+            .filter(models.NOTICE_DETAIL_DAT.deleted_at == None)\
             .subquery('vote_sub_query')
 
-    comment_sub_query = db.query(models.Notice.id
-                                , func.count(models.NoticeComment.id).label("notice_comment_cnt"))\
-            .join(models.NoticeComment, models.Notice.id == models.NoticeComment.notice_id, isouter=True)\
-            .group_by(models.Notice.id)\
-            .filter(models.Notice.deleted_at == None)\
+    comment_sub_query = db.query(models.NOTICE_DETAIL_DAT.id
+                                , func.count(models.NOTICE_DETAIL_COMMENT_DAT.id).label("notice_comment_cnt"))\
+            .join(models.NOTICE_DETAIL_COMMENT_DAT, models.NOTICE_DETAIL_DAT.id == models.NOTICE_DETAIL_COMMENT_DAT.notice_id, isouter=True)\
+            .group_by(models.NOTICE_DETAIL_DAT.id)\
+            .filter(models.NOTICE_DETAIL_DAT.deleted_at == None)\
             .subquery('comment_sub_query')
 
-    return db.query(models.Notice.id
-                    , models.Notice.title
-                    , models.Notice.views
-                    , models.Notice.created_at
-                    , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("writer")
+    return db.query(models.NOTICE_DETAIL_DAT.id
+                    , models.NOTICE_DETAIL_DAT.title
+                    , models.NOTICE_DETAIL_DAT.views
+                    , models.NOTICE_DETAIL_DAT.created_at
+                    , func.substring(models.USER.email, 1, func.instr(models.USER.email, '@') - 1).label("writer")
                     , vote_sub_query.c.like_cnt
                     , comment_sub_query.c.notice_comment_cnt)\
-            .join(models.User, models.Notice.user_id == models.User.id)\
-            .join(vote_sub_query, models.Notice.id == vote_sub_query.c.id)\
-            .join(comment_sub_query, models.Notice.id == comment_sub_query.c.id)\
-            .filter(models.Notice.deleted_at == None)\
-            .order_by(models.Notice.id.desc())\
-            .group_by(models.Notice.id)\
+            .join(models.USER, models.NOTICE_DETAIL_DAT.user_id == models.USER.id)\
+            .join(vote_sub_query, models.NOTICE_DETAIL_DAT.id == vote_sub_query.c.id)\
+            .join(comment_sub_query, models.NOTICE_DETAIL_DAT.id == comment_sub_query.c.id)\
+            .filter(models.NOTICE_DETAIL_DAT.deleted_at == None)\
+            .order_by(models.NOTICE_DETAIL_DAT.id.desc())\
+            .group_by(models.NOTICE_DETAIL_DAT.id)\
             .all()
 
 
 # Notice Detail
 def get_notice(db: Session, notice_id: int):
-    vote_sub_query = db.query(models.Notice.id
-                , func.sum(case([(models.NoticeVote.like == True, 1)], else_=0)).label("like_cnt")
-                , func.sum(case([(models.NoticeVote.hate == True, 1)], else_=0)).label("hate_cnt"))\
-            .join(models.NoticeVote, models.Notice.id == models.NoticeVote.notice_id, isouter=True)\
-            .group_by(models.Notice.id)\
-            .filter(models.Notice.id == notice_id)\
-            .filter(models.Notice.deleted_at == None)\
+    vote_sub_query = db.query(models.NOTICE_DETAIL_DAT.id
+                , func.sum(case([(models.NOTICE_DETAIL_VOTE_DAT.like == True, 1)], else_=0)).label("like_cnt")
+                , func.sum(case([(models.NOTICE_DETAIL_VOTE_DAT.hate == True, 1)], else_=0)).label("hate_cnt"))\
+            .join(models.NOTICE_DETAIL_VOTE_DAT, models.NOTICE_DETAIL_DAT.id == models.NOTICE_DETAIL_VOTE_DAT.notice_id, isouter=True)\
+            .group_by(models.NOTICE_DETAIL_DAT.id)\
+            .filter(models.NOTICE_DETAIL_DAT.id == notice_id)\
+            .filter(models.NOTICE_DETAIL_DAT.deleted_at == None)\
             .subquery('vote_sub_query')
 
-    comment_sub_query = db.query(models.Notice.id
-                                , func.count(models.NoticeComment.id).label("notice_comment_cnt"))\
-            .join(models.NoticeComment, models.Notice.id == models.NoticeComment.notice_id, isouter=True)\
-            .group_by(models.Notice.id)\
-            .filter(models.Notice.deleted_at == None)\
-            .filter(models.NoticeComment.deleted_at == None)\
+    comment_sub_query = db.query(models.NOTICE_DETAIL_DAT.id
+                                , func.count(models.NOTICE_DETAIL_COMMENT_DAT.id).label("notice_comment_cnt"))\
+            .join(models.NOTICE_DETAIL_COMMENT_DAT, models.NOTICE_DETAIL_DAT.id == models.NOTICE_DETAIL_COMMENT_DAT.notice_id, isouter=True)\
+            .group_by(models.NOTICE_DETAIL_DAT.id)\
+            .filter(models.NOTICE_DETAIL_DAT.deleted_at == None)\
+            .filter(models.NOTICE_DETAIL_COMMENT_DAT.deleted_at == None)\
             .subquery('comment_sub_query')
 
-    return db.query(models.Notice.id
-                , models.Notice.title
-                , models.Notice.content
-                , models.Notice.views
-                , models.Notice.created_at
-                , models.Notice.updated_at
+    return db.query(models.NOTICE_DETAIL_DAT.id
+                , models.NOTICE_DETAIL_DAT.title
+                , models.NOTICE_DETAIL_DAT.content
+                , models.NOTICE_DETAIL_DAT.views
+                , models.NOTICE_DETAIL_DAT.created_at
+                , models.NOTICE_DETAIL_DAT.updated_at
                 , vote_sub_query.c.like_cnt
                 , vote_sub_query.c.hate_cnt
-                , models.User.id.label("writer_id")
+                , models.USER.id.label("writer_id")
                 , comment_sub_query.c.notice_comment_cnt
-                , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("writer"))\
-            .join(models.User, models.Notice.user_id == models.User.id)\
-            .join(comment_sub_query, models.Notice.id == comment_sub_query.c.id)\
-            .join(vote_sub_query, models.Notice.id == vote_sub_query.c.id)\
-            .filter(models.Notice.id == notice_id)\
+                , func.substring(models.USER.email, 1, func.instr(models.USER.email, '@') - 1).label("writer"))\
+            .join(models.USER, models.NOTICE_DETAIL_DAT.user_id == models.USER.id)\
+            .join(comment_sub_query, models.NOTICE_DETAIL_DAT.id == comment_sub_query.c.id)\
+            .join(vote_sub_query, models.NOTICE_DETAIL_DAT.id == vote_sub_query.c.id)\
+            .filter(models.NOTICE_DETAIL_DAT.id == notice_id)\
             .first()
 
 
 # Notice View Count Update
 def update_notice_view_count(db: Session, notice_id: int):
-    db_notice = db.query(models.Notice).filter(models.Notice.id == notice_id).first()
+    db_notice = db.query(models.NOTICE_DETAIL_DAT).filter(models.NOTICE_DETAIL_DAT.id == notice_id).first()
     db_notice.views = db_notice.views + 1
     db.add(db_notice)
     db.commit()
@@ -98,7 +98,7 @@ def update_notice_view_count(db: Session, notice_id: int):
 
 # Notice Update
 def update_notice(db: Session, notice_id: int, notice: schemas.NoticeBase):
-    db_notice = db.query(models.Notice).filter(models.Notice.id == notice_id).first()
+    db_notice = db.query(models.NOTICE_DETAIL_DAT).filter(models.NOTICE_DETAIL_DAT.id == notice_id).first()
     db_notice.title = notice.title
     db_notice.content = notice.content
     db.add(db_notice)
@@ -109,7 +109,7 @@ def update_notice(db: Session, notice_id: int, notice: schemas.NoticeBase):
 
 # Notice Delete
 def delete_notice(db: Session, notice_id: int):
-    db_notice = db.query(models.Notice).filter(models.Notice.id == notice_id).first()
+    db_notice = db.query(models.NOTICE_DETAIL_DAT).filter(models.NOTICE_DETAIL_DAT.id == notice_id).first()
     db_notice.deleted_at = get_datetime()
     db.add(db_notice)
     db.commit()
@@ -119,7 +119,7 @@ def delete_notice(db: Session, notice_id: int):
 
 # Notice Comment Create
 def create_notice_comment(db: Session, comment: schemas.CommentBase, notice_id: int, user_id: int):
-    db_comment = models.NoticeComment(**comment.dict(), notice_id=notice_id, user_id=user_id)
+    db_comment = models.NOTICE_DETAIL_COMMENT_DAT(**comment.dict(), notice_id=notice_id, user_id=user_id)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
@@ -128,32 +128,32 @@ def create_notice_comment(db: Session, comment: schemas.CommentBase, notice_id: 
 
 # Notice Comment List
 def get_notice_comments(db: Session, notice_id: int):
-    return db.query(models.Notice.id
-                , models.NoticeComment.id
-                , models.NoticeComment.comment
-                , models.NoticeComment.created_at
-                , models.NoticeComment.updated_at
-                , models.User.id.label("writer_id")
-                , func.substring(models.User.email, 1, func.instr(models.User.email, '@') - 1).label("writer"))\
-            .join(models.NoticeComment, models.Notice.id == models.NoticeComment.notice_id)\
-            .join(models.User, models.NoticeComment.user_id == models.User.id)\
-            .filter(models.Notice.id == notice_id)\
-            .filter(models.NoticeComment.deleted_at == None)\
-            .order_by(models.NoticeComment.id.desc())\
+    return db.query(models.NOTICE_DETAIL_DAT.id
+                , models.NOTICE_DETAIL_COMMENT_DAT.id
+                , models.NOTICE_DETAIL_COMMENT_DAT.comment
+                , models.NOTICE_DETAIL_COMMENT_DAT.created_at
+                , models.NOTICE_DETAIL_COMMENT_DAT.updated_at
+                , models.USER.id.label("writer_id")
+                , func.substring(models.USER.email, 1, func.instr(models.USER.email, '@') - 1).label("writer"))\
+            .join(models.NOTICE_DETAIL_COMMENT_DAT, models.NOTICE_DETAIL_DAT.id == models.NOTICE_DETAIL_COMMENT_DAT.notice_id)\
+            .join(models.USER, models.NOTICE_DETAIL_COMMENT_DAT.user_id == models.USER.id)\
+            .filter(models.NOTICE_DETAIL_DAT.id == notice_id)\
+            .filter(models.NOTICE_DETAIL_COMMENT_DAT.deleted_at == None)\
+            .order_by(models.NOTICE_DETAIL_COMMENT_DAT.id.desc())\
             .all()
 
 
 # Notice Comment Detail
 def get_notice_comment(db: Session, comment_id: int):
-    return db.query(models.NoticeComment)\
-            .filter(models.NoticeComment.id == comment_id)\
-            .filter(models.NoticeComment.deleted_at == None)\
+    return db.query(models.NOTICE_DETAIL_COMMENT_DAT)\
+            .filter(models.NOTICE_DETAIL_COMMENT_DAT.id == comment_id)\
+            .filter(models.NOTICE_DETAIL_COMMENT_DAT.deleted_at == None)\
             .first()
 
 
 # Notice Comment Update
 def update_notice_comment(db: Session, comment_id: int, comment: schemas.CommentBase):
-    db_comment = db.query(models.NoticeComment).filter(models.NoticeComment.id == comment_id).first()
+    db_comment = db.query(models.NOTICE_DETAIL_COMMENT_DAT).filter(models.NOTICE_DETAIL_COMMENT_DAT.id == comment_id).first()
     db_comment.comment = comment.comment
     db.add(db_comment)
     db.commit()
@@ -163,7 +163,7 @@ def update_notice_comment(db: Session, comment_id: int, comment: schemas.Comment
 
 # Notice Comment Delete
 def delete_notice_comment(db: Session, comment_id: int):
-    db_comment = db.query(models.NoticeComment).filter(models.NoticeComment.id == comment_id).first()
+    db_comment = db.query(models.NOTICE_DETAIL_COMMENT_DAT).filter(models.NOTICE_DETAIL_COMMENT_DAT.id == comment_id).first()
     db_comment.deleted_at = get_datetime()
     db.add(db_comment)
     db.commit()
@@ -173,16 +173,16 @@ def delete_notice_comment(db: Session, comment_id: int):
 
 # Notice Get Like, Hate
 def get_votes(db: Session, notice_id: int):
-    return db.query(models.NoticeVote)\
-            .filter(models.NoticeVote.notice_id == notice_id)\
+    return db.query(models.NOTICE_DETAIL_VOTE_DAT)\
+            .filter(models.NOTICE_DETAIL_VOTE_DAT.notice_id == notice_id)\
             .all()
 
 
 # Notice Set Like, Hate Update
 def update_vote(db: Session, vote: schemas.VoteUpdate, notice_id: int, user_id: int):
-    db_like = db.query(models.NoticeVote)\
-                .filter(models.NoticeVote.notice_id == notice_id)\
-                .filter(models.NoticeVote.user_id == user_id)\
+    db_like = db.query(models.NOTICE_DETAIL_VOTE_DAT)\
+                .filter(models.NOTICE_DETAIL_VOTE_DAT.notice_id == notice_id)\
+                .filter(models.NOTICE_DETAIL_VOTE_DAT.user_id == user_id)\
                 .first()
 
     if db_like:
@@ -193,7 +193,7 @@ def update_vote(db: Session, vote: schemas.VoteUpdate, notice_id: int, user_id: 
         db.refresh(db_like)
         return get_votes(db=db, notice_id=notice_id)
 
-    db_like = models.NoticeVote(**vote.dict(), notice_id=notice_id, user_id=user_id)
+    db_like = models.NOTICE_DETAIL_VOTE_DAT(**vote.dict(), notice_id=notice_id, user_id=user_id)
     db.add(db_like)
     db.commit()
     db.refresh(db_like)

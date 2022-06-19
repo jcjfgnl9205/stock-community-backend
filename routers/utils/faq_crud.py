@@ -7,7 +7,7 @@ from datetime import datetime
 
 # Faq Create
 def create_faq(db: Session, faq: schemas.FaqBase):
-    db_faq = models.Faq(**faq.dict())
+    db_faq = models.FAQ_MST(**faq.dict())
     db.add(db_faq)
     db.commit()
     db.refresh(db_faq)
@@ -16,23 +16,23 @@ def create_faq(db: Session, faq: schemas.FaqBase):
 
 # Faq List
 def get_faqs(db: Session):
-    return db.query(models.Faq)\
-                .filter(models.Faq.deleted_at == None)\
-                .order_by(models.Faq.id.desc())\
+    return db.query(models.FAQ_MST)\
+                .filter(models.FAQ_MST.deleted_at == None)\
+                .order_by(models.FAQ_MST.id.desc())\
                 .all()
 
 
 # Faq Read
 def get_faq(db: Session, faq_id: int):
-    return db.query(models.Faq)\
-                .filter(models.Faq.id == faq_id)\
-                .filter(models.Faq.deleted_at == None)\
+    return db.query(models.FAQ_MST)\
+                .filter(models.FAQ_MST.id == faq_id)\
+                .filter(models.FAQ_MST.deleted_at == None)\
                 .first()
 
 
 # Faq Update
 def update_faq(db:Session, faq: schemas.FaqBase, faq_id: int):
-    db_faq = db.query(models.Faq).filter(models.Faq.id == faq_id).first()
+    db_faq = db.query(models.FAQ_MST).filter(models.FAQ_MST.id == faq_id).first()
     db_faq.title = faq.title
     db_faq.content = faq.content
     db_faq.flg = faq.flg
@@ -43,7 +43,7 @@ def update_faq(db:Session, faq: schemas.FaqBase, faq_id: int):
 
 # Faq Delete
 def delete_faq(db: Session, faq_id: int):
-    db_faq = db.query(models.Faq).filter(models.Faq.id == faq_id).first()
+    db_faq = db.query(models.FAQ_MST).filter(models.FAQ_MST.id == faq_id).first()
     db_faq.deleted_at = get_datetime()
     db.commit()
     db.refresh(db_faq)
