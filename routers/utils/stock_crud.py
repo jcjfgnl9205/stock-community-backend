@@ -7,6 +7,9 @@ from fastapi import status
 from fastapi.responses import JSONResponse
 
 
+def get_stocks_mst(db: Session):
+    return db.query(models.STOCK_MST).all()
+
 
 # Category Check
 def get_stock_mst(db: Session, stock: str):
@@ -24,7 +27,7 @@ def get_stocks(db: Session, stock_id: int):
             .subquery('vote_sub_query')
 
     comment_sub_query = db.query(models.STOCK_DETAIL_DAT.id
-                                , func.count(models.STOCK_DETAIL_COMMENT_DAT.id).label("stock_comment_cnt"))\
+                                , func.count(models.STOCK_DETAIL_COMMENT_DAT.id).label("notice_comment_cnt"))\
             .join(models.STOCK_DETAIL_COMMENT_DAT, models.STOCK_DETAIL_DAT.id == models.STOCK_DETAIL_COMMENT_DAT.stock_id, isouter=True)\
             .group_by(models.STOCK_DETAIL_DAT.id)\
             .filter(models.STOCK_DETAIL_DAT.deleted_at == None)\
@@ -36,7 +39,7 @@ def get_stocks(db: Session, stock_id: int):
                     , models.STOCK_DETAIL_DAT.created_at
                     , func.substring(models.USER.email, 1, func.instr(models.USER.email, '@') - 1).label("writer")
                     , vote_sub_query.c.like_cnt
-                    , comment_sub_query.c.stock_comment_cnt)\
+                    , comment_sub_query.c.notice_comment_cnt)\
             .join(models.USER, models.STOCK_DETAIL_DAT.user_id == models.USER.id)\
             .join(vote_sub_query, models.STOCK_DETAIL_DAT.id == vote_sub_query.c.id)\
             .join(comment_sub_query, models.STOCK_DETAIL_DAT.id == comment_sub_query.c.id)\
@@ -59,7 +62,7 @@ def get_stock(db: Session, stock_id: int):
             .subquery('vote_sub_query')
 
     comment_sub_query = db.query(models.STOCK_DETAIL_DAT.id
-                                , func.count(models.STOCK_DETAIL_COMMENT_DAT.id).label("stock_comment_cnt"))\
+                                , func.count(models.STOCK_DETAIL_COMMENT_DAT.id).label("notice_comment_cnt"))\
             .join(models.STOCK_DETAIL_COMMENT_DAT, models.STOCK_DETAIL_DAT.id == models.STOCK_DETAIL_COMMENT_DAT.stock_id, isouter=True)\
             .group_by(models.STOCK_DETAIL_DAT.id)\
             .filter(models.STOCK_DETAIL_DAT.deleted_at == None)\
@@ -75,7 +78,7 @@ def get_stock(db: Session, stock_id: int):
                 , vote_sub_query.c.like_cnt
                 , vote_sub_query.c.hate_cnt
                 , models.USER.id.label("writer_id")
-                , comment_sub_query.c.stock_comment_cnt
+                , comment_sub_query.c.notice_comment_cnt
                 , func.substring(models.USER.email, 1, func.instr(models.USER.email, '@') - 1).label("writer"))\
             .join(models.USER, models.STOCK_DETAIL_DAT.user_id == models.USER.id)\
             .join(comment_sub_query, models.STOCK_DETAIL_DAT.id == comment_sub_query.c.id)\

@@ -10,6 +10,9 @@ class STOCK_MST(BaseModel):
     path: Optional[str]
     show_name: Optional[str]
 
+    class Config:
+        orm_mode = True
+
 class VoteBase(BaseModel):
     like: Optional[bool] = False
     hate: Optional[bool] = False
@@ -33,7 +36,7 @@ class Stocks(BaseModel):
     title: str
     views: int
     created_at: datetime
-    stock_comment_cnt: Optional[int] = 0
+    notice_comment_cnt: Optional[int] = 0
     like_cnt: Optional[int] = 0
     writer: str
 
@@ -44,7 +47,7 @@ class Stock(StockBase):
     hate_cnt: int = 0
     created_at: datetime
     updated_at: datetime
-    stock_comment_cnt: int
+    notice_comment_cnt: int
     writer_id: int
     writer: str
 

@@ -31,6 +31,11 @@ def checked_category_mst(stock: str, db: Session = Depends(get_db)):
 
 
 
+@router.get("", response_model=List[schemas.STOCK_MST])
+async def get_stocks_mst(db: Session = Depends(get_db)):
+    return stock_crud.get_stocks_mst(db=db)
+
+
 @router.post("/{stock}", response_model=schemas.Stock)
 async def create_stock(stock_create: schemas.StockBase
                         , stock: schemas.STOCK_MST = Depends(checked_category_mst)

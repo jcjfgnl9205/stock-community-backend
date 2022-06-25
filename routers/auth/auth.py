@@ -187,7 +187,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
         return auth_handler.decode_token(token)
 
 
-@router.get('/{username}', response_model=schemas.User)
+@router.get('/{username}/MyInfo', response_model=schemas.User)
 def get_user_api(username: str
             , current_user: str = Depends(get_current_user)
             , db: Session = Depends(get_db)):
@@ -197,7 +197,7 @@ def get_user_api(username: str
     return get_user(db=db, username=username)
 
 
-@router.put('/{username}', response_model=schemas.User)
+@router.put('/{username}/MyInfo', response_model=schemas.User)
 def get_user_api(username: str
             , user: schemas.UserUpdate
             , current_user: str = Depends(get_current_user)
