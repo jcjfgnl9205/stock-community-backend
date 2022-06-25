@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from routers.menu import menu
 from routers.auth import auth
 from routers.notice import notice
 from routers.stock import stock
@@ -20,6 +21,7 @@ app.add_middleware(
     allow_headers=['*']
 )
 
+app.include_router(menu.router)
 app.include_router(auth.router)
 app.include_router(notice.router)
 app.include_router(stock.router)

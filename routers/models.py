@@ -173,4 +173,33 @@ class STOCK_DETAIL_VOTE_DAT(Base):
     STOCK_DETAIL_DAT = relationship("STOCK_DETAIL_DAT", back_populates="STOCK_DETAIL_VOTE_DAT")
 
 
+class MENU_MST(Base):
+    __tablename__ = "MENU_MST"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    name_sub = Column(String, nullable=False)
+    path = Column(String, nullable=False)
+    show_order = Column(Integer, default=False, nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+    MENU_SUB_MST = relationship("MENU_SUB_MST", back_populates="MENU_MST")
+
+class MENU_SUB_MST(Base):
+    __tablename__ = "MENU_SUB_MST"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    name_sub = Column(String, nullable=False)
+    path = Column(String, nullable=False)
+    show_order = Column(Integer, default=False, nullable=False)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+    menu_id = Column(Integer, ForeignKey("MENU_MST.id"))
+    
+    MENU_MST = relationship("MENU_MST", back_populates="MENU_SUB_MST")
+
 metadata.create_all(bind=engine)
