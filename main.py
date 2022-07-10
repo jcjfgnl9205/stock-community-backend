@@ -21,8 +21,8 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-app.include_router(menu.router, prefix="/api/v1")
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(notice.router, prefix="/api/v1")
-app.include_router(stock.router, prefix="/api/v1")
-app.include_router(faq.router, prefix="/api/v1")
+app.include_router(menu.router, prefix="/app/v1")
+app.include_router(auth.router, prefix="/app/v1")
+app.include_router(notice.router, prefix="/app/v1")
+app.include_router(stock.router, prefix="/app/v1")
+app.include_router(faq.router, prefix="/app/v1")
