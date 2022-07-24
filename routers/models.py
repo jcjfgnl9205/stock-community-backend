@@ -1,5 +1,5 @@
 from db.session import Base, metadata, engine
-from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, DateTime, TIMESTAMP
+from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, DateTime, TIMESTAMP, Numeric
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -16,6 +16,7 @@ class USER(Base):
     address2 = Column(String)
     first_name = Column(String)
     last_name = Column(String)
+    sns = Column(String)
     is_active = Column(Boolean, default=False, nullable=False)
     is_staff = Column(Boolean, default=False, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
@@ -201,5 +202,39 @@ class MENU_SUB_MST(Base):
     menu_id = Column(Integer, ForeignKey("MENU_MST.id"))
     
     MENU_MST = relationship("MENU_MST", back_populates="MENU_SUB_MST")
+
+
+class CURRENCY_MST(Base):
+    __tablename__ = "CURRENCY_MST"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    currency = Column(String, nullable=False)
+    currency_name_en = Column(String, nullable=True)
+    currency_name_jp = Column(String, nullable=True)
+    currency_name_kr = Column(String, nullable=True)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+    _to = relationship("CURRENCY_DAT", foreign_keys='CURRENCY_DAT.currency_to', back_populates="_currency_to")
+    _from = relationship("CURRENCY_DAT", foreign_keys='CURRENCY_DAT.currency_from', back_populates="_currency_from")
+
+
+class CURRENCY_DAT(Base):
+    __tablename__ = "CURRENCY_DAT"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    inc_dec = Column(String, nullable=True)
+    inc_dec_per = Column(String, nullable=True)
+    price = Column(Numeric, nullable=True)
+    created_at = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+    currency_to = Column(Integer, ForeignKey("CURRENCY_MST.id"))
+    currency_from = Column(Integer, ForeignKey("CURRENCY_MST.id"))
+    
+    _currency_to = relationship("CURRENCY_MST", foreign_keys=[currency_to])
+    _currency_from = relationship("CURRENCY_MST", foreign_keys=[currency_from])
+
 
 metadata.create_all(bind=engine)
