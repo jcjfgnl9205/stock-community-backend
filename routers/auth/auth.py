@@ -99,7 +99,7 @@ def get_user(db: Session, username: str):
         return user
 
 
-def authenticate_user(db: Session, username: str, password: str):
+def authenticate_user(db: Session, username: str, password: str, sns: Optional[str] = None):
     user = get_user(db=db, username=username)
     # userが存在しない場合、Exceptionを発生する
     if not user:
@@ -239,3 +239,19 @@ async def forgot_password_authnum(user: schemas.PasswordFind
     if not _user:
         raise HTTPException(status_code=401, detail="認証番号が間違っています。")
     return _user
+
+
+@router.post("/google/callback")
+async def google_login(user: schemas.GoogleLogin, db: Session = Depends(get_db)):
+    _user = auth_crud.get_user_for_email(db=db, email=user.email, sns=user.sns)
+    if _user:
+        _user = auth_crud.get_user(db=db, username=_user.username)
+        access_token = auth_handler.encode_token(user=_user)
+        refresh_token = auth_handler.encode_refresh_token(user=_user)
+        auth_crud.update_refresh_token(db=db, username=_user.username, refresh_token=refresh_token)
+        return {'access_token': access_token, 'refresh_token': refresh_token}
+
+    try:
+        return auth_crud.create_user(db=db, user=user)
+    except:
+        raise HTTPException(status_code=409, detail="username already exists")

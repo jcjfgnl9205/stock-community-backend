@@ -5,7 +5,7 @@ from pydantic import BaseModel, EmailStr
 
 class Token(BaseModel):
     access_token: str
-    refresh_token: str
+    refresh_token: Optional[str] = None
 
 class UserInfoCheck(BaseModel):
     username: Optional[str] = None
@@ -37,6 +37,7 @@ class UserUpdate(User):
 class Login(BaseModel):
     username: str
     password: str
+    sns: Optional[str] = None
 
 class UserPassword(BaseModel):
     oldPassword: str
@@ -46,3 +47,13 @@ class UserPassword(BaseModel):
 class PasswordFind(BaseModel):
     email: str
     authNum: Optional[str] = 0
+
+
+class GoogleLogin(BaseModel):
+    username: str
+    email: str
+    sns : str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    is_active: Optional[bool] = True
+    is_staff: Optional[bool] = False

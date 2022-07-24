@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.orm import Session
 from .. import models
 from ..auth import schemas
@@ -9,9 +10,10 @@ def get_user(db: Session, username: str):
             .filter(models.USER.username == username)\
             .first()
 
-def get_user_for_email(db: Session, email: str):
+def get_user_for_email(db: Session, email: str, sns: Optional[str] = None):
     return db.query(models.USER)\
             .filter(models.USER.email == email)\
+            .filter(models.USER.sns == sns)\
             .first()
 
 # User Insert
