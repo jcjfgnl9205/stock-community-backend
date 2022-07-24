@@ -4,6 +4,7 @@ from routers.auth import auth
 from routers.notice import notice
 from routers.stock import stock
 from routers.faq import faq
+from routers.finance import finance
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -26,3 +27,4 @@ app.include_router(auth.router, prefix="/app/v1")
 app.include_router(notice.router, prefix="/app/v1")
 app.include_router(stock.router, prefix="/app/v1")
 app.include_router(faq.router, prefix="/app/v1")
+app.include_router(finance.router, prefix="/app/v1")
