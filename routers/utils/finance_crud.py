@@ -23,7 +23,8 @@ def get_finance_dat(db: Session):
                     , currency_mst_b.currency.label("currency_from")
                     , models.CURRENCY_DAT.inc_dec
                     , models.CURRENCY_DAT.inc_dec_per
-                    , models.CURRENCY_DAT.price)\
+                    , models.CURRENCY_DAT.price
+                    , models.CURRENCY_DAT.created_at)\
                 .join(currency_mst_a, models.CURRENCY_DAT.currency_to == currency_mst_a.id)\
                 .join(currency_mst_b, models.CURRENCY_DAT.currency_from == currency_mst_b.id)\
                 .join(sub_query, models.CURRENCY_DAT.id == sub_query.c.id)\

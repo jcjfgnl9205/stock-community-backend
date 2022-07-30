@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class ExchangeRate_DAT(BaseModel):
@@ -8,6 +9,7 @@ class ExchangeRate_DAT(BaseModel):
     inc_dec: str
     inc_dec_per: str
     price: float
+    created_at: datetime
 
     class Config:
         orm_mode = True
