@@ -1,4 +1,5 @@
 import os
+import FinanceDataReader as fdr
 
 from datetime import datetime
 from typing import Optional, List
@@ -26,3 +27,7 @@ router = APIRouter(
 async def get_finance_dat(db: Session = Depends(get_db)):
     return finance_crud.get_finance_dat(db=db)
 
+
+@router.get("/stock")
+async def get_stock_info(db: Session = Depends(get_db)):
+    return fdr.DataReader('7203', '2020-01-01', exchange='TSE')
